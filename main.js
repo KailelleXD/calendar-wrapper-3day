@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 let mainWindow = null;
 let tray = null;
 
-const CAL_URL = 'https://calendar.google.com/calendar/u/0/r';
+const CAL_URL = 'https://calendar.google.com/calendar/u/0/r/custom/3/d';
 
 async function createWindow() {
   // dynamically import electron-store only when needed
@@ -27,7 +27,7 @@ mainWindow = new BrowserWindow({
   height,
   x,
   y,
-  title: "Google Calendar - Today's Date",  // verbatim string
+  title: "Google Calendar - 3 Day Schedule",  // verbatim string
   backgroundColor: '#ffffff',
   show: false,
   autoHideMenuBar: true,
@@ -35,7 +35,7 @@ mainWindow = new BrowserWindow({
     nodeIntegration: false,
     contextIsolation: true,
     preload: path.join(__dirname, 'preload.js'),
-    partition: 'persist:calendar'   // <-- persistent partition
+    partition: 'persist:calendar-3day'   // <-- persistent partition
   },
 });
 
@@ -47,7 +47,7 @@ mainWindow.webContents.on('did-finish-load', () => {
 // After the page loads, override any title changes
 mainWindow.webContents.on('page-title-updated', (event) => {
   event.preventDefault(); // stop Google Calendar from changing it
-  mainWindow.setTitle("Google Calendar - Today's Date");
+  mainWindow.setTitle("Google Calendar - 3 Day Schedule");
 });
 
 
@@ -62,6 +62,14 @@ mainWindow.webContents.on('page-title-updated', (event) => {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
+
+  // Auto-refresh every 1 hour
+const ONE_HOUR = 60 * 60 * 1000;
+setInterval(() => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.reload();
+  }
+}, ONE_HOUR);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
